@@ -12,7 +12,7 @@ body { margin: 0; }
 a { color: inherit; }
 :focus-visible { outline: 3px solid #2870b7; outline-offset: 3px; }
 .ancho { width: min(72rem, calc(100% - 2rem)); margin-inline: auto; }
-.barra { background: var(--navy); color: white; }
+.barra { background: var(--navy); color: white; border-bottom: 3px solid #4977a7; }
 .barra nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 4rem; }
 .barra a { text-decoration: none; }
 .barra a:hover, .barra [aria-current] { text-decoration: underline; text-underline-offset: .35rem; }
@@ -40,7 +40,9 @@ input:not([type=hidden]), select { display: block; width: 100%; min-height: 2.65
 table { width: 100%; min-width: 43rem; border-collapse: collapse; text-align: left; }
 th, td { padding: .65rem 1rem; border-bottom: 1px solid var(--line); }
 thead { background: #e9eff7; }
-tbody tr:hover { background: #f5f8fc; }
+tbody tr:nth-child(even) { background: #f8fafd; }
+tbody tr:hover, tbody tr:focus-within { background: #eef4fb; }
+tbody th { color: var(--navy); }
 td:last-child { width: 1%; white-space: nowrap; }
 td .acciones { flex-wrap: nowrap; }
 .referencia { color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -59,4 +61,8 @@ footer { padding-block: 1.5rem; }
 }
 @media (max-width: 31rem) {
     .filtros { grid-template-columns: 1fr; }
+    .filtros .acciones > * { flex: 1; }
+    .estadisticas { gap: .45rem; }
+    .estadisticas dt { font-size: .8rem; }
+    .estadisticas dd { font-size: 1.45rem; }
 }
