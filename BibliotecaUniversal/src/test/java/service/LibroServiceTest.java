@@ -166,6 +166,18 @@ class LibroServiceTest {
     }
 
     @Test
+    void distingueUnaReferenciaExactaDeUnTituloNumerico() {
+        servicio.crear(new dto.LibroDTO(0, "1984", 1949, 1, 1));
+        var exactos = servicio.buscarPorTexto("#1");
+
+        assertEquals(1, exactos.size());
+        assertEquals("Don Quijote", exactos.get(0).getTitulo());
+        assertEquals("1984", servicio.buscarPorTexto("1984").get(0).getTitulo());
+        assertTrue(servicio.buscarPorTexto("#999999999999").isEmpty());
+        assertTrue(servicio.buscarPorTexto("#9999").isEmpty());
+    }
+
+    @Test
     void rechazaTitulosMasLargosQueLaColumna() {
         var libro = new dto.LibroDTO(0, "á".repeat(151), 2020, 1, 1);
         assertThrows(IllegalArgumentException.class, () -> servicio.crear(libro));

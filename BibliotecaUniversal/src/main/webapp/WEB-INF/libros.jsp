@@ -37,8 +37,8 @@
     <section class="panel" aria-label="Resultados del catálogo">
         <form action="controlador" method="get" class="filtros">
             <input type="hidden" name="accion" value="buscar">
-            <label>Título o autor
-                <input type="search" name="texto" value="${fn:escapeXml(texto)}">
+            <label>Título, autor o #ID
+                <input type="search" name="texto" placeholder="Ej. 1984 o #24" value="${fn:escapeXml(texto)}">
             </label>
             <label>Autor
                 <select name="autorId">
@@ -69,11 +69,12 @@
             <c:otherwise>
                 <div class="tabla" tabindex="0" role="region" aria-label="Libros encontrados">
                     <table>
-                        <thead><tr><th scope="col">Título</th><th scope="col">Autor</th><th scope="col">Género</th><th scope="col">Año</th><th scope="col">Acciones</th></tr></thead>
+                        <thead><tr><th scope="col">Título</th><th scope="col">ID</th><th scope="col">Autor</th><th scope="col">Género</th><th scope="col">Año</th><th scope="col">Acciones</th></tr></thead>
                         <tbody>
                         <c:forEach var="libro" items="${lista}">
                             <tr>
                                 <th scope="row"><c:out value="${libro.titulo}"/></th>
+                                <td><span class="referencia">#${libro.id}</span></td>
                                 <td><c:out value="${libro.autorNombre}"/></td>
                                 <td><span class="etiqueta"><c:out value="${libro.generoNombre}"/></span></td>
                                 <td>${libro.anio}</td>

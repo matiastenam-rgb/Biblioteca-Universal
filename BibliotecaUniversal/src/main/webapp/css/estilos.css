@@ -43,6 +43,7 @@ thead { background: #e9eff7; }
 tbody tr:hover { background: #f5f8fc; }
 td:last-child { width: 1%; white-space: nowrap; }
 td .acciones { flex-wrap: nowrap; }
+.referencia { color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .etiqueta { display: inline-block; padding: .2rem .55rem; border-radius: 1rem; background: #e8eef7; color: #29476c; font-size: .8rem; }
 .vacio, .paginas { padding: 1rem; }
 .paginas { justify-content: center; }

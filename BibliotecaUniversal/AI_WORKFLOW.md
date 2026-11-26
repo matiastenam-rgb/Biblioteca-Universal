@@ -274,3 +274,7 @@ El encargo pedía auditar el proyecto, renovar el catálogo y los formularios, p
 - GlassFish 7.0.26 precompiló las JSP y sirvió la aplicación conectada a MySQL 8.0.44. Ambos usaron puertos de prueba independientes, fuera de Docker. `init.sql` creó cinco tablas en una base con nombre alternativo y cargó 113 libros, 28 autores, 13 géneros y 5 préstamos. Tras reiniciar MySQL coincidieron el recuento y la huella de los títulos e identificadores, y el catálogo volvió a responder.
 - La nueva versión superó búsqueda, filtros combinados, paginación, altas, edición, validación, baja temporal y mensajes. Se verificó la restricción de préstamos con HTTP 409, una clave foránea inválida con HTTP 400 y el escape de texto con tildes y caracteres HTML. Se inspeccionó el navegador a 1440 y 390 píxeles. En móvil el desplazamiento horizontal queda dentro de la tabla.
 - `docker compose --env-file .env.example config --quiet` fue correcto. El cliente recibió acceso denegado al canal de Docker Desktop. Quedaron pendientes la reconstrucción con Compose y la comprobación de sus tres servicios, la actualización del repositorio original, la publicación y el archivo ZIP posterior. El título histórico del catálogo activo no se editó.
+
+### Ajuste de búsqueda por referencia
+
+La tabla muestra el identificador con almohadilla. La búsqueda por referencia exacta se puede combinar con los filtros existentes y conserva las búsquedas de títulos numéricos. Se verificó con 22 pruebas JUnit y con peticiones HTTP al WAR desplegado en GlassFish 7 y MySQL 8 aislados.

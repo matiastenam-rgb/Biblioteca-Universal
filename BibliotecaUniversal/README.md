@@ -141,7 +141,7 @@ docker compose logs --tail 50 app db
 ## Manual
 
 1. Abre el catálogo y consulta los totales de libros, autores y géneros.
-2. Introduce parte del título o del nombre del autor. Puedes combinar el texto con uno o ambos selectores. **Limpiar** restaura el catálogo y **Anterior** y **Siguiente** conservan los filtros.
+2. Introduce parte del título o del nombre del autor. Para localizar un libro exacto, escribe su referencia con almohadilla, por ejemplo #24. Puedes combinar el texto con uno o ambos selectores. **Limpiar** restaura el catálogo y **Anterior** y **Siguiente** conservan los filtros.
 3. Pulsa **Nuevo libro** y completa título, autor, género y año. El año admite valores negativos para obras anteriores a la era común.
 4. Usa **Editar** para abrir un registro. **Cancelar** vuelve al catálogo. Los errores de validación se muestran en el formulario.
 5. Usa **Eliminar** y confirma la operación. MySQL impide borrar libros con préstamos asociados. El catálogo muestra el resultado de la operación.

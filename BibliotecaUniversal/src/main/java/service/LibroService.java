@@ -48,7 +48,18 @@ public class LibroService {
         if (texto == null || texto.trim().isEmpty()) {
             return listarTodos();
         }
-        List<Libro> libros = dao.selectByTexto(texto.trim());
+        String busqueda = texto.trim();
+        if (busqueda.matches("#[0-9]+")) {
+            int id;
+            try {
+                id = Integer.parseInt(busqueda.substring(1));
+            } catch (NumberFormatException e) {
+                return List.of();
+            }
+            LibroDetalleDTO libro = obtenerDetallePorId(id);
+            return libro == null ? List.of() : List.of(libro);
+        }
+        List<Libro> libros = dao.selectByTexto(busqueda);
         List<LibroDetalleDTO> dtos = new ArrayList<>();
         for (Libro l : libros) {
             dtos.add(toDetalleDTO(l));
