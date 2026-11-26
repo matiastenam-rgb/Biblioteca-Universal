@@ -96,7 +96,7 @@ La propuesta de usar 3 contenedores (app, MySQL, Adminer) con volumen persistent
 Invoke-WebRequest -Uri "http://localhost:8080/BibliotecaUniversal-1.0/controlador" -Method POST -Body @{"accion"="modificar"; "id"="31"; "titulo"="Don Quijote de la Mancha"; "autorId"="9"; "generoId"="1"; "anio"="2025"}
 
 # Verificar en MySQL
-docker exec biblioteca_db mysql -uroot -pREDACTED -e "SELECT id, titulo, anio FROM biblioteca_universal.libros WHERE id=31;"
+docker exec biblioteca_db mysql -uroot -p -e "SELECT id, titulo, anio FROM biblioteca_universal.libros WHERE id=31;"
 
 # Pruebas JUnit 5
 docker create --name temp-maven -w=/app maven:3.9-eclipse-temurin-17 mvn test
@@ -104,8 +104,8 @@ docker cp "D:\2do DAM\BASE DE DATOS JAVA\Entrega 1\BibliotecaUniversal\." temp-m
 docker start -a temp-maven
 
 # init.sql idempotente (dos ejecuciones)
-docker exec test-init bash -c "mysql -uroot -pREDACTED < /tmp/init.sql"
-docker exec test-init bash -c "mysql -uroot -pREDACTED < /tmp/init.sql"
+docker exec test-init bash -c "mysql -uroot -p < /tmp/init.sql"
+docker exec test-init bash -c "mysql -uroot -p < /tmp/init.sql"
 # Resultado: 28 autores, 13 géneros, 113 libros, 3 usuarios, 5 préstamos
 ```
 

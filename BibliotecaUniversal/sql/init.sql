@@ -293,9 +293,5 @@ WHERE NOT EXISTS (
     WHERE p.libro_id = t.libro_id AND p.usuario_id = t.usuario_id AND p.fecha_prestamo = t.fecha_prestamo
 );
 
--- Usuario para la aplicación (localhost + cualquier host para Docker)
-CREATE USER IF NOT EXISTS 'biblio_uni'@'localhost' IDENTIFIED BY 'REDACTED';
-GRANT SELECT, INSERT, UPDATE, DELETE ON biblioteca_universal.* TO 'biblio_uni'@'localhost';
-CREATE USER IF NOT EXISTS 'biblio_uni'@'%' IDENTIFIED BY 'REDACTED';
-GRANT SELECT, INSERT, UPDATE, DELETE ON biblioteca_universal.* TO 'biblio_uni'@'%';
-FLUSH PRIVILEGES;
+-- La creación del usuario y sus permisos se gestiona
+-- mediante las variables de entorno de Docker Compose.
