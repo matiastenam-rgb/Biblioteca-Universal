@@ -48,12 +48,11 @@ public class Connect {
         }
     }
 
-    public static java.sql.Connection getConnection() {
-        try {
-            return pool.getConnection();
-        } catch (Exception e) {
-            return null;
+    public static java.sql.Connection getConnection() throws java.sql.SQLException {
+        if (pool == null) {
+            throw new java.sql.SQLException("El pool de conexiones no está inicializado");
         }
+        return pool.getConnection();
     }
 
     public static void close() {

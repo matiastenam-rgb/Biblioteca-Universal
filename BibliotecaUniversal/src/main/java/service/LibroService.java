@@ -27,6 +27,13 @@ public class LibroService {
         return dtos;
     }
 
+    public List<LibroDetalleDTO> filtrar(List<LibroDetalleDTO> candidatos, int autorId, int generoId) {
+        return candidatos.stream()
+                .filter(libro -> autorId == 0 || libro.getAutorId() == autorId)
+                .filter(libro -> generoId == 0 || libro.getGeneroId() == generoId)
+                .toList();
+    }
+
     public LibroDTO obtenerPorId(int id) {
         Libro libro = dao.selectById(id);
         return libro != null ? toDTO(libro) : null;
@@ -105,13 +112,16 @@ public class LibroService {
 
     public LibroDetalleDTO toDetalleDTO(Libro libro) {
         if (libro == null) return null;
-        return new LibroDetalleDTO(
+        LibroDetalleDTO detalle = new LibroDetalleDTO(
             libro.getId(),
             libro.getTitulo(),
             libro.getAnio(),
             libro.getAutorNombre(),
             libro.getGeneroNombre()
         );
+        detalle.setAutorId(libro.getAutorId());
+        detalle.setGeneroId(libro.getGeneroId());
+        return detalle;
     }
 
     public Libro toEntity(LibroDTO dto) {
@@ -133,6 +143,9 @@ public class LibroService {
         if (dto.getTitulo() == null || dto.getTitulo().trim().isEmpty()) {
             throw new IllegalArgumentException("El título no puede estar vacío");
         }
+        if (dto.getTitulo().codePointCount(0, dto.getTitulo().length()) > 150) {
+            throw new IllegalArgumentException("El título admite hasta 150 caracteres");
+        }
         if (dto.getAnio() < -1000 || dto.getAnio() > java.util.Calendar.getInstance().get(java.util.Calendar.YEAR) + 1) {
             throw new IllegalArgumentException("El año no es válido");
         }
@@ -150,6 +163,9 @@ public class LibroService {
         }
         if (libro.getTitulo() == null || libro.getTitulo().trim().isEmpty()) {
             throw new IllegalArgumentException("El título no puede estar vacío");
+        }
+        if (libro.getTitulo().codePointCount(0, libro.getTitulo().length()) > 150) {
+            throw new IllegalArgumentException("El título admite hasta 150 caracteres");
         }
         if (libro.getAnio() < -1000 || libro.getAnio() > java.util.Calendar.getInstance().get(java.util.Calendar.YEAR) + 1) {
             throw new IllegalArgumentException("El año no es válido");

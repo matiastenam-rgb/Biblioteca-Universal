@@ -12,6 +12,7 @@ public class AppListener implements ServletContextListener, HttpSessionListener 
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
+        sce.getServletContext().setSessionTimeout(30);
         Connect.create();
     }
 

@@ -15,7 +15,7 @@ public class LibroDaoJdbc implements LibroDao {
                      "FROM libros l " +
                      "LEFT JOIN autores a ON l.autor_id = a.id " +
                      "LEFT JOIN generos g ON l.genero_id = g.id " +
-                     "ORDER BY l.titulo";
+                     "ORDER BY l.titulo, l.id";
         try (Connection conn = Connect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -53,7 +53,7 @@ public class LibroDaoJdbc implements LibroDao {
                      "LEFT JOIN autores a ON l.autor_id = a.id " +
                      "LEFT JOIN generos g ON l.genero_id = g.id " +
                      "WHERE l.titulo LIKE ? OR a.nombre LIKE ? " +
-                     "ORDER BY l.titulo";
+                     "ORDER BY l.titulo, l.id";
         try (Connection conn = Connect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             String busqueda = "%" + texto + "%";
@@ -65,7 +65,7 @@ public class LibroDaoJdbc implements LibroDao {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error al buscar libros por texto: " + texto, e);
+            throw new DataAccessException("Error al buscar libros por texto", e);
         }
         return lista;
     }

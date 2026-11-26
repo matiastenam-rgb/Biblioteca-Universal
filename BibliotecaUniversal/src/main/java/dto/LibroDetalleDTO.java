@@ -4,6 +4,8 @@ public class LibroDetalleDTO {
     private int id;
     private String titulo;
     private int anio;
+    private int autorId;
+    private int generoId;
     private String autorNombre;
     private String autorNacionalidad;
     private String generoNombre;
@@ -26,6 +28,11 @@ public class LibroDetalleDTO {
         this.autorNombre = autorNombre;
         this.generoNombre = generoNombre;
     }
+
+    public int getAutorId() { return autorId; }
+    public void setAutorId(int autorId) { this.autorId = autorId; }
+    public int getGeneroId() { return generoId; }
+    public void setGeneroId(int generoId) { this.generoId = generoId; }
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
