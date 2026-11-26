@@ -1,0 +1,17 @@
+# Exclude environment files
+.env
+# Build output
+target/
+# Backup files
+backup/
+# IDE private settings
+*.iml
+.idea/
+*.classpath
+*.project
+*.settings/
+# Logs and temporary files
+*.log
+*.tmp
+# Exclude delivered ZIP
+*.zip
