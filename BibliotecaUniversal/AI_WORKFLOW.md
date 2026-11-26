@@ -248,3 +248,29 @@ En esta fase de trabajo, se utilizó el asistente de IA **Antigravity** para aud
    - Prueba real de ciclo de vida: parada de contenedores con `docker compose down` y relanzamiento con `docker compose up -d`.
    - Verificación de persistencia del volumen nombrado `biblioteca_data` (114 libros conservados intactos).
 
+
+
+## Auditoría y rediseño · 26 de noviembre de 2026
+
+El encargo pedía auditar el proyecto, renovar el catálogo y los formularios, preservar los datos, documentar el despliegue y publicar en `main` tras la verificación. La instrucción de trabajo fue el encargo «Biblioteca Universal — Auditoría, mejora y publicación definitiva», con sus apartados I a IX. Codex ejecutó la revisión y las pruebas con Maven, MySQL, GlassFish y navegador.
+
+### Estado inicial y prioridades
+
+- GitHub presentaba `main` en `400a700ed727db34416d8b626bc6f04a17860e5f`. La copia local de ese commit estaba limpia. La sesión recibió acceso denegado al repositorio original de la unidad D: incluso tras solicitar permisos, por lo que el estado de esa copia quedó pendiente.
+- La aplicación activa redirigía al catálogo, devolvía HTTP 200 y mostraba 114 libros. El listado ya buscaba por título o autor y permitía crear, editar y eliminar. Mostraba todos los libros en una tabla y se observó un título histórico con caracteres mal codificados. El CRUD temporal usó tildes, devolvió HTTP 400 al enviar un año inválido y retiró únicamente el registro de prueba. Se compararon los 114 identificadores originales antes y después. La página de Adminer respondió HTTP 200.
+- Prioridad alta para el escape de datos en JSP, el tratamiento de errores de JDBC y la validación de formularios. Prioridad media para filtros, contadores, paginación, navegación y documentación contrastada con el repositorio. El README anterior incluía una cifra de cobertura cuya medición no se pudo reproducir y atribuía a la interfaz operaciones reservadas a las capas Java.
+
+### Decisiones y archivos
+
+- `ServletController.java`, `LibroService.java`, `LibroDetalleDTO.java` y `LibroDaoJdbc.java` mantienen la búsqueda SQL parametrizada y aplican filtros por identificador y paginación de 20 libros en memoria, adecuados al volumen observado. El orden usa título e identificador. Los totales provienen del catálogo y de los selectores. La interfaz permanece centrada en libros.
+- `libros.jsp`, `formularioLibro.jsp` y `estilos.css` incorporan cabecera, tarjetas, filtros etiquetados, tabla adaptable, acciones con texto, mensajes y estados vacíos. JSTL escapa los datos en el cuerpo y los atributos. Las operaciones correctas redirigen con 303 y las infracciones de integridad muestran errores diferenciados.
+- `Connect.java` propaga la excepción JDBC para conservar su causa. GlassFish en Windows no pudo resolver un XSD incluido por el descriptor `WEB-INF/web.xml`. Se eliminó el descriptor redundante, `AppListener.java` fija la sesión en 30 minutos y se comprobó la bienvenida estándar de GlassFish mediante `index.jsp`.
+- `.env.example`, `.dockerignore`, `docker-compose.yml` y `sql/init.sql` explicitan ejemplos ficticios, excluyen secretos del contexto de build, publican puertos en loopback y cargan el esquema en la base configurada. El volumen y los datos existentes se preservan. `README.md` documenta el modelo, contenedores, despliegue, pruebas y manual.
+- `pom.xml` fija Surefire 3.2.5. `LibroServiceTest.java` añade pruebas para filtros combinados y títulos demasiado largos. Una ejecución detectó que el nombre H2 compartido contaminaba las pruebas. Se aisló cada base de servicio y la repetición quedó verde.
+
+### Resultados y estado de entrega
+
+- Maven 3.9.9 y JDK 17 completaron `mvn clean verify`. Se ejecutaron 21 pruebas, 21 superadas, con 0 fallos, 0 errores y 0 omitidas. Se compiló el WAR.
+- GlassFish 7.0.26 precompiló las JSP y sirvió la aplicación conectada a MySQL 8.0.44. Ambos usaron puertos de prueba independientes, fuera de Docker. `init.sql` creó cinco tablas en una base con nombre alternativo y cargó 113 libros, 28 autores, 13 géneros y 5 préstamos. Tras reiniciar MySQL coincidieron el recuento y la huella de los títulos e identificadores, y el catálogo volvió a responder.
+- La nueva versión superó búsqueda, filtros combinados, paginación, altas, edición, validación, baja temporal y mensajes. Se verificó la restricción de préstamos con HTTP 409, una clave foránea inválida con HTTP 400 y el escape de texto con tildes y caracteres HTML. Se inspeccionó el navegador a 1440 y 390 píxeles. En móvil el desplazamiento horizontal queda dentro de la tabla.
+- `docker compose --env-file .env.example config --quiet` fue correcto. El cliente recibió acceso denegado al canal de Docker Desktop. Quedaron pendientes la reconstrucción con Compose y la comprobación de sus tres servicios, la actualización del repositorio original, la publicación y el archivo ZIP posterior. El título histórico del catálogo activo no se editó.

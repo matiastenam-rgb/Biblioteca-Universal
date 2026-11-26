@@ -1,206 +1,169 @@
 # Biblioteca Universal
 
-## 1. Presentación del proyecto
-Aplicación web **Biblioteca Universal** para la gestión de catálogos literarios. Permite registrar libros, autores y géneros, y gestionar préstamos. La arquitectura se basa en **Jakarta EE 10**, **JDBC**, **MySQL 8** y despliegue mediante **Docker Compose**.
+Aplicación académica de gestión de un catálogo literario. Permite consultar, buscar, filtrar, crear, editar y eliminar libros. Autores y géneros alimentan los formularios y los filtros. Usuarios y préstamos forman parte del modelo de datos y de las capas Java. La interfaz se dedica al catálogo.
 
-## 2. Objetivos y funcionalidades
-- Registro y mantenimiento de libros, autores y géneros.
-- Gestión de préstamos con control de integridad referencial.
-- Operaciones CRUD mediante formularios JSP y controladores servlets.
-- Validaciones de entrada en el servidor y de negocio en los servicios.
-- Manejo de errores HTTP 400, 404 y 500.
-- Persistencia de datos en MySQL con volumen Docker.
-- 19 pruebas automatizadas (unitarias e integración) con cobertura real del código.
+## Arquitectura
 
-## 3. Tecnologías utilizadas
-| Tipo | Herramienta |
-|------|--------------|
-| Lenguaje | **Java 17** (Jakarta EE 10) |
-| Servidor de aplicaciones | **GlassFish 7** |
-| Base de datos | **MySQL 8** (Docker) |
-| Gestión de dependencias | **Maven** |
-| Contenedores | **Docker Compose** |
-| Pruebas | **JUnit 5**, **H2** (modo‑memoria) |
-| CI/CD (local) | Docker Compose scripts |
+Java 17, Jakarta EE 10 y GlassFish 7 sirven la aplicación web. Maven genera el WAR. JSP y JSTL presentan los datos. El servlet valida la entrada HTTP, los servicios aplican las reglas de negocio y convierten entidades en DTO, y los DAO usan JDBC, consultas parametrizadas y un pool DBCP2 para acceder a MySQL 8. JUnit 5 y H2 permiten ejecutar las pruebas del servicio y de persistencia.
 
-## 4. Arquitectura por capas y responsabilidades
-```
-[ Navegador Web ]
-        │  HTTP / Form URL‑Encoded / PRG
-        ▼
-[ ServletController (web/) ]
-        │  DTOs (LibroDTO, AutorDTO, …)
-        ▼
-[ Servicios (service/) ]  ──► Validaciones de negocio y conversión Entity ↔ DTO
-        │  Entidades de dominio (domain/)
-        ▼
-[ DAOs (data/) ]           ──► PreparedStatement + try‑with‑resources + DataAccessException
-        │  JDBC Connection Pool (DBCP2)
-        ▼
-[ MySQL 8 Database ]
-```
-
-## 5. Modelo entidad‑relación (Mermaid)
-```mermaid
-erDiagram
-    AUTOR ||--o{ LIBRO : escribe
-    GENERO ||--o{ LIBRO : clasifica
-    LIBRO ||--o{ PRESTAMO : presta
-    USUARIO ||--o{ PRESTAMO : realiza
-    AUTOR {
-        int id PK
-        string nombre
-        string nacionalidad
-        date fecha_nacimiento
-        date fecha_muerte
-    }
-    GENERO {
-        int id PK
-        string nombre
-        string descripcion
-    }
-    LIBRO {
-        int id PK
-        string titulo
-        int anio
-        int autor_id FK
-        int genero_id FK
-    }
-    USUARIO {
-        int id PK
-        string nombre
-        string email UQ
-        date fecha_registro
-    }
-    PRESTAMO {
-        int id PK
-        int libro_id FK
-        int usuario_id FK
-        date fecha_prestamo
-        date fecha_devolucion
-        string estado
-    }
-```
-
-## 6. Arquitectura de contenedores Docker (Mermaid)
 ```mermaid
 flowchart LR
-    subgraph Red["bibliotecauniversal_default"]
-        direction TB
-        app["biblioteca_app (GlassFish 7)"]
-        db["biblioteca_db (MySQL 8)"]
-        admin["biblioteca_adminer (Adminer)"]
-        app -- "depends on" --> db
-        admin -- "conecta a" --> db
-        db -- "volumen persistente" --> data["biblioteca_data"]
+    UI["Navegador"] --> Web["Servlet y vistas JSP/JSTL"]
+    Web -->|"DTO"| Serv["Servicios"]
+    Serv -->|"Entidades de dominio"| DAO["DAO JDBC"]
+    DAO -->|"Pool DBCP2"| Datos["MySQL 8"]
+```
+
+## Modelo entidad-relación
+
+Las relaciones reflejan [sql/init.sql](sql/init.sql). Cada libro pertenece a un autor y a un género. Cada préstamo corresponde a un libro y un usuario. Las claves foráneas son obligatorias y usan `ON DELETE RESTRICT` y `ON UPDATE CASCADE`.
+
+```mermaid
+erDiagram
+    autores ||--o{ libros : escribe
+    generos ||--o{ libros : clasifica
+    libros ||--o{ prestamos : tiene
+    usuarios ||--o{ prestamos : realiza
+    autores {
+        INT id PK
+        VARCHAR(100) nombre UK
+        VARCHAR(60) nacionalidad
+        DATE fecha_nacimiento
+        DATE fecha_muerte
+    }
+    generos {
+        INT id PK
+        VARCHAR(60) nombre UK
+        TEXT descripcion
+    }
+    libros {
+        INT id PK
+        VARCHAR(150) titulo
+        INT anio
+        INT autor_id FK
+        INT genero_id FK
+    }
+    usuarios {
+        INT id PK
+        VARCHAR(100) nombre
+        VARCHAR(120) email UK
+        DATE fecha_registro
+    }
+    prestamos {
+        INT id PK
+        INT libro_id FK
+        INT usuario_id FK
+        DATE fecha_prestamo
+        DATE fecha_devolucion
+        VARCHAR(20) estado
+    }
+```
+
+## Arquitectura de contenedores
+
+```mermaid
+flowchart LR
+    Web["Navegador local"]
+    Cliente["Cliente MySQL local"]
+    subgraph Red["Red interna de Docker Compose"]
+        App["app · GlassFish 7 · Java 17"]
+        Adminer["adminer · Adminer"]
+        DB["db · MySQL 8"]
+        App -->|"JDBC db:3306"| DB
+        Adminer -->|"MySQL db:3306"| DB
     end
-    style app fill:#f9f,stroke:#333,stroke-width:2px
-    style db fill:#bbf,stroke:#333,stroke-width:2px
-    style admin fill:#bfb,stroke:#333,stroke-width:2px
+    Web -->|"127.0.0.1:8080 → app:8080"| App
+    Web -->|"127.0.0.1:8081 → adminer:8080"| Adminer
+    Cliente -->|"127.0.0.1:3306 → db:3306"| DB
+    DB -->|"/var/lib/mysql"| Volumen[("biblioteca_data")]
 ```
 
-## 7. Estructura del árbol de archivos
-```
+Compose monta `sql/init.sql` en modo de solo lectura. MySQL ejecuta el script al inicializar un volumen vacío con la base indicada por `DB_NAME`. Las actualizaciones de la aplicación conservan la base existente. Se puede pausar el entorno con `docker compose stop` y reanudarlo con `docker compose start`.
+
+## Estructura
+
+```text
 BibliotecaUniversal/
-├─ pom.xml                     # Configuración Maven
-├─ Dockerfile                  # Build multi‑stage (Maven + GlassFish)
-├─ docker-compose.yml          # Definición de los servicios
-├─ .gitignore                 # Ignora .env, target/, backup/, tmp/, IDE configs
-├─ .env.example                # Plantilla de variables de entorno
-├─ sql/                        # Scripts de inicialización y carga de datos
-│   ├─ init.sql
-│   ├─ add_books.sql
-│   └─ biblioteca_universal.sql
-├─ src/
-│   ├─ main/
-│   │   ├─ java/
-│   │   │   ├─ data/          # DAOs y Connect.java
-│   │   │   ├─ domain/        # Entidades del modelo
-│   │   │   ├─ dto/           # DTOs
-│   │   │   ├─ service/       # Lógica de negocio
-│   │   │   └─ web/           # Servlets
-│   │   └─ webapp/            # JSPs, CSS y recursos estáticos
-│   └─ test/                 # Tests JUnit 5
-└─ AI_WORKFLOW.md            # Registro del flujo de trabajo con IA
+├── .env.example
+├── .gitignore
+├── Dockerfile
+├── docker-compose.yml
+├── pom.xml
+├── sql/                     # init.sql y scripts auxiliares
+├── src/main/java/           # web, service, dto, domain y data
+├── src/main/webapp/         # JSP y CSS
+├── src/test/java/           # JUnit 5
+├── README.md
+└── AI_WORKFLOW.md
 ```
 
-## 8. Requisitos previos de instalación
-- Docker Desktop (o Docker Engine) instalado y en ejecución.
-- Docker Compose (v2) disponible en la línea de comandos.
-- JDK 17 y Maven 3.9+ (solo si se desea compilar localmente; la imagen Docker ya incluye la compilación).
-- Puertos libres 8080, 8081 y 3306 en el host.
-- Conexión a internet para descargar imágenes base la primera vez.
+## Requisitos y clonación
 
-## 9. Configuración de variables de entorno
-```bash
-Copy-Item .env.example .env   # PowerShell command
+Instala Git, Docker y Docker Compose. Inicia el motor de Docker y comprueba que los puertos 8080, 8081 y 3306 estén libres. Para compilar fuera de Docker, instala JDK 17 y Maven 3.9.
+
+```powershell
+git clone https://github.com/matiastenam-rgb/Biblioteca-Universal.git
+cd Biblioteca-Universal/BibliotecaUniversal
+Copy-Item .env.example .env
 ```
-El archivo `.env` debe contener los valores de ejemplo mostrados en `.env.example`. **No** se deben incluir contraseñas reales; `.env` está excluido por `.gitignore`.
 
-## 10. Guía de despliegue paso a paso
-1. Construir y lanzar los contenedores
-   ```bash
-   docker compose up --build -d
-   ```
-2. Verificar que los servicios están saludables
-   ```bash
-   docker compose ps
-   docker compose logs -f app   # Ver logs del contenedor de la aplicación
-   ```
-3. Acceder a la aplicación: `http://localhost:8080/BibliotecaUniversal-1.0/`
-4. Acceder a Adminer (gestor de BD): `http://localhost:8081`
-   - Servidor: `db`
-   - Usuario: `biblio_uni`
-   - Contraseña: la que haya definido en `.env` (ej. `tu_contraseña_aqui`)
-   - Base de datos: `biblioteca_universal`
-5. Detener el entorno
-   ```bash
-   docker compose down
-   ```
-   *Los datos persisten en el volumen Docker `biblioteca_data` y no se eliminan al detener los contenedores.*
+En Bash, usa `cp .env.example .env` para crear la configuración. Si el entorno ya tiene un `.env`, reutilízalo. El archivo está excluido por Git.
 
-## 11. Puertos, URLs de acceso y credenciales de ejemplo
-| Servicio | URL / Host | Puerto | Usuario | Contraseña (ejemplo) | Base de datos |
-|----------|------------|--------|---------|----------------------|---------------|
-| Aplicación web | `http://localhost:8080/BibliotecaUniversal-1.0/` | 8080 | — | — | — |
-| Adminer | `http://localhost:8081` | 8081 | `biblio_uni` | `tu_contraseña_aqui` | `biblioteca_universal` |
-| MySQL | `db` (dentro de Docker) o `localhost` | 3306 | `biblio_uni` (o `root`) | `tu_contraseña_aqui` / `tu_root_password_aqui` | `biblioteca_universal` |
+| Variable en `.env` | Ejemplo | Función |
+|---|---|---|
+| `DB_HOST` | `localhost` | Servidor que se exporta al proceso de GlassFish si se ejecuta fuera de Compose. |
+| `DOCKER_DB_HOST` | `db` | Compose lo pasa como `DB_HOST` dentro del contenedor de la aplicación. `db` es el nombre del servicio MySQL. |
+| `DB_PORT` | `3306` | Puerto JDBC. En Compose es el puerto interno de MySQL. |
+| `DB_NAME` | `biblioteca_universal` | Base usada por JDBC y variable `MYSQL_DATABASE` al inicializar MySQL. |
+| `DB_USER` | `biblio_uni` | Usuario JDBC y valor de `MYSQL_USER` para inicializar la cuenta de aplicación. |
+| `DB_PASS` | `ejemplo_biblio_local` | Contraseña de ejemplo de esa cuenta. Compose la pasa también como `MYSQL_PASSWORD`. |
+| `MYSQL_ROOT_PASSWORD` | `ejemplo_root_local` | Contraseña ficticia de administración para inicializar MySQL. |
 
-## 12. Manual breve de utilización de la aplicación
-1. **Listar libros**: Abra la URL principal; se muestra una tabla con los libros.
-2. **Buscar libros**: Use el campo de búsqueda en la cabecera (búsqueda por título o autor).
-3. **Crear libro**: Pulse **+ Nuevo libro**, complete el formulario (seleccione autor y género) y guarde.
-4. **Editar libro**: Pulse el ícono lápiz junto al registro, modifique los datos y confirme.
-5. **Eliminar libro**: Pulse el ícono papelera y confirme; si el libro está asociado a préstamos, la aplicación devuelve HTTP 400 con mensaje de integridad referencial.
-6. **Gestión de préstamos**: Sólo existen rutas de servicio; no hay vistas dedicadas en la UI actual.
+GlassFish fuera de Compose lee las variables del entorno del proceso. Editar `.env` por sí solo no las exporta. Para un volumen ya inicializado, los valores de conexión deben coincidir con las cuentas y la base de datos existentes.
 
-## 13. Pruebas automatizadas y resultados reales
-```bash
-mvn test
+## Despliegue
+
+Ejecuta estos comandos desde el directorio que contiene `docker-compose.yml`.
+
+```powershell
+docker compose config --quiet
+docker compose up --build -d
+docker compose ps
+docker compose logs --tail 50 app db
 ```
-Salida relevante:
+
+| Servicio | Acceso desde el host | Credenciales de prueba |
+|---|---|---|
+| Aplicación | [Biblioteca Universal](http://localhost:8080/BibliotecaUniversal-1.0/) | Acceso local directo |
+| Adminer | [Adminer](http://localhost:8081/) | Sistema MySQL, servidor `db`, usuario `biblio_uni`, contraseña `ejemplo_biblio_local`, base `biblioteca_universal` |
+| MySQL | `127.0.0.1:3306` | La misma cuenta de ejemplo. El usuario administrador de inicialización es `root`, con contraseña ficticia `ejemplo_root_local`. |
+
+## Manual
+
+1. Abre el catálogo y consulta los totales de libros, autores y géneros.
+2. Introduce parte del título o del nombre del autor. Puedes combinar el texto con uno o ambos selectores. **Limpiar** restaura el catálogo y **Anterior** y **Siguiente** conservan los filtros.
+3. Pulsa **Nuevo libro** y completa título, autor, género y año. El año admite valores negativos para obras anteriores a la era común.
+4. Usa **Editar** para abrir un registro. **Cancelar** vuelve al catálogo. Los errores de validación se muestran en el formulario.
+5. Usa **Eliminar** y confirma la operación. MySQL impide borrar libros con préstamos asociados. El catálogo muestra el resultado de la operación.
+
+## Pruebas
+
+```powershell
+mvn clean verify
 ```
-[INFO] Running service.LibroServiceTest
-[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0
-[INFO] Running data.LibroDaoTest
-[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0
-[INFO] Tests run: 19, Failures: 0, Errors: 0, Skipped: 0
-[INFO] BUILD SUCCESS
-```
-Todas las **19 pruebas** se ejecutan correctamente (100 % de éxito). La cobertura de código real es aproximadamente **85 %** (medida con JaCoCo), no se reclama cobertura total.
 
-## 14. Persistencia de datos y gestión de volúmenes
-- Los contenedores `biblioteca_db` y `biblioteca_app` comparten el **volumen Docker `biblioteca_data`** que almacena los archivos de datos de MySQL (`/var/lib/mysql`).
-- El volumen persiste después de `docker compose down`; para eliminar los datos debe ejecutarse `docker compose down -v` (no se realiza en la entrega).
+Maven ejecuta JUnit 5 y genera `target/BibliotecaUniversal-1.0.war`. Los informes por suite se guardan en `target/surefire-reports/`. H2 ejecuta las pruebas del DAO y los servicios con una base de datos de prueba. El despliegue con MySQL se comprueba de forma independiente.
 
-## 15. Uso de Junie y Antigravity, con referencia a `AI_WORKFLOW.md`
-El proyecto se desarrolló inicialmente con la asistencia de **Junie** (definición de requisitos) y posteriormente con **Antigravity** (auditoría de código, correcciones y generación de documentación). El registro completo de prompts, decisiones y correcciones se encuentra en el archivo **`AI_WORKFLOW.md`**.
+## Resolución de problemas
 
-## 16. Autoría y contexto académico
-- **Autor**: *Matías Tena*
-- **Asignatura**: *Acceso a Datos* (2.º **CFGS** de *Desarrollo de Aplicaciones Multiplataforma*)
-- **Institución**: *[Nombre del centro educativo]* (el nombre real del centro deberá completarse por el alumno).
-- **Fecha**: noviembre 2026
+| Síntoma | Comprobación |
+|---|---|
+| HTTP 404 al abrir la aplicación | Usa el contexto `/BibliotecaUniversal-1.0/` y revisa los mensajes de despliegue en `docker compose logs app`. |
+| MySQL todavía no está listo | Consulta `docker compose ps` y `docker compose logs db`. La aplicación depende del estado saludable de `db`. |
+| Error de credenciales | Compara las variables con la cuenta real de MySQL. Cambiar `.env` no cambia las cuentas del volumen existente. |
+| Puerto ocupado | Identifica el proceso que ocupa el puerto antes de arrancar Compose. Los puertos internos y externos se documentan en el diagrama. |
+| Caracteres incorrectos en un título existente | Comprueba el valor almacenado y corrige el título desde el formulario tras confirmar el texto original. |
 
----
-> **Nota**: Este documento utiliza únicamente información real del proyecto; no se incluyen credenciales privadas y los ejemplos de contraseñas son ficticios.
+## Autoría
+
+Matías Tena · Acceso a Datos · 2.º de Desarrollo de Aplicaciones Multiplataforma. El historial de asistencia de IA está en [AI_WORKFLOW.md](AI_WORKFLOW.md).
