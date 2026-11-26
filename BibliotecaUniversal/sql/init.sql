@@ -1,10 +1,7 @@
 -- Biblioteca Universal - Script de inicialización
 -- 5 tablas relacionadas: autores, géneros, libros, usuarios, préstamos
 
-CREATE DATABASE IF NOT EXISTS biblioteca_universal
-    CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-USE biblioteca_universal;
+-- MySQL selecciona MYSQL_DATABASE al ejecutar este script.
 
 -- Tabla de autores
 CREATE TABLE IF NOT EXISTS autores (
@@ -13,14 +10,14 @@ CREATE TABLE IF NOT EXISTS autores (
     nacionalidad VARCHAR(60),
     fecha_nacimiento DATE,
     fecha_muerte DATE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla de géneros
 CREATE TABLE IF NOT EXISTS generos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(60) NOT NULL UNIQUE,
     descripcion TEXT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla de libros (relacionada con autores y géneros)
 CREATE TABLE IF NOT EXISTS libros (
@@ -31,7 +28,7 @@ CREATE TABLE IF NOT EXISTS libros (
     genero_id INT NOT NULL,
     FOREIGN KEY (autor_id) REFERENCES autores(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (genero_id) REFERENCES generos(id) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla de usuarios
 CREATE TABLE IF NOT EXISTS usuarios (
@@ -39,7 +36,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     nombre VARCHAR(100) NOT NULL,
     email VARCHAR(120) NOT NULL UNIQUE,
     fecha_registro DATE NOT NULL DEFAULT (CURRENT_DATE)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla de préstamos (relacionada con libros y usuarios)
 CREATE TABLE IF NOT EXISTS prestamos (
@@ -51,26 +48,26 @@ CREATE TABLE IF NOT EXISTS prestamos (
     estado VARCHAR(20) NOT NULL DEFAULT 'Prestado',
     FOREIGN KEY (libro_id) REFERENCES libros(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Índices para mejorar búsquedas (idempotentes)
 SET @exists = 0;
-SELECT COUNT(*) INTO @exists FROM information_schema.statistics WHERE table_schema = 'biblioteca_universal' AND index_name = 'idx_libros_titulo';
+SELECT COUNT(*) INTO @exists FROM information_schema.statistics WHERE table_schema = DATABASE() AND index_name = 'idx_libros_titulo';
 SET @sql = IF(@exists = 0, 'CREATE INDEX idx_libros_titulo ON libros(titulo)', 'SELECT ""');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 SET @exists = 0;
-SELECT COUNT(*) INTO @exists FROM information_schema.statistics WHERE table_schema = 'biblioteca_universal' AND index_name = 'idx_libros_anio';
+SELECT COUNT(*) INTO @exists FROM information_schema.statistics WHERE table_schema = DATABASE() AND index_name = 'idx_libros_anio';
 SET @sql = IF(@exists = 0, 'CREATE INDEX idx_libros_anio ON libros(anio)', 'SELECT ""');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 SET @exists = 0;
-SELECT COUNT(*) INTO @exists FROM information_schema.statistics WHERE table_schema = 'biblioteca_universal' AND index_name = 'idx_prestamos_estado';
+SELECT COUNT(*) INTO @exists FROM information_schema.statistics WHERE table_schema = DATABASE() AND index_name = 'idx_prestamos_estado';
 SET @sql = IF(@exists = 0, 'CREATE INDEX idx_prestamos_estado ON prestamos(estado)', 'SELECT ""');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 SET @exists = 0;
-SELECT COUNT(*) INTO @exists FROM information_schema.statistics WHERE table_schema = 'biblioteca_universal' AND index_name = 'idx_prestamos_usuario';
+SELECT COUNT(*) INTO @exists FROM information_schema.statistics WHERE table_schema = DATABASE() AND index_name = 'idx_prestamos_usuario';
 SET @sql = IF(@exists = 0, 'CREATE INDEX idx_prestamos_usuario ON prestamos(usuario_id)', 'SELECT ""');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
