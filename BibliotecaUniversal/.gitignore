@@ -1,0 +1,29 @@
+# Maven
+target/
+*.war
+*.ear
+
+# Environment
+.env
+
+# Backups and Local Dumps
+backup/
+*.sql.bak
+*.bak
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs & Temp
+*.log
+tmp/
+temp/
+*.zip

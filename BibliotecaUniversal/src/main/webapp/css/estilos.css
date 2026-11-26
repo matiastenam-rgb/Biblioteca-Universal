@@ -1,0 +1,217 @@
+:root {
+    --color-primario: #2c3e50;
+    --color-secundario: #3498db;
+    --color-fondo: #ecf0f1;
+    --color-texto: #2c3e50;
+    --color-blanco: #ffffff;
+    --color-exito: #27ae60;
+    --color-peligro: #e74c3c;
+    --sombra: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+    padding: 20px;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--color-blanco);
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: var(--sombra);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: var(--color-primario);
+}
+
+.mensaje {
+    background: var(--color-exito);
+    color: var(--color-blanco);
+    padding: 12px 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.mensaje.error {
+    background: var(--color-peligro);
+}
+
+.acciones {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.buscador {
+    display: flex;
+    flex: 1;
+    gap: 5px;
+}
+
+.buscador input[type="text"] {
+    flex: 1;
+    padding: 10px 15px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.buscador button {
+    padding: 10px 20px;
+    background: var(--color-secundario);
+    color: var(--color-blanco);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.buscador button:hover {
+    background: #2980b9;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background: var(--color-secundario);
+    color: var(--color-blanco);
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: #2980b9;
+}
+
+.btn-cancelar {
+    background: #95a5a6;
+}
+
+.btn-cancelar:hover {
+    background: #7f8c8d;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+thead {
+    background: var(--color-primario);
+    color: var(--color-blanco);
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.btn-celda {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-editar, .btn-eliminar {
+    text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px;
+}
+
+.btn-eliminar:hover {
+    transform: scale(1.2);
+}
+
+.sin-resultados {
+    text-align: center;
+    padding: 30px !important;
+    color: #7f8c8d;
+    font-style: italic;
+}
+
+.form-container {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--color-primario);
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px 15px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--color-secundario);
+    outline: none;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.form-actions .btn {
+    flex: 1;
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 15px;
+    }
+    .acciones {
+        flex-direction: column;
+    }
+    .buscador {
+        width: 100%;
+    }
+    table {
+        font-size: 13px;
+    }
+    th, td {
+        padding: 8px;
+    }
+}
