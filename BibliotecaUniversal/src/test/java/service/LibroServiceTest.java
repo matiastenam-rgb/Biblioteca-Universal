@@ -29,7 +29,7 @@ class LibroServiceTest {
         org.apache.commons.dbcp2.BasicDataSource pool =
             new org.apache.commons.dbcp2.BasicDataSource();
         pool.setDriverClassName("org.h2.Driver");
-        pool.setUrl("jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1");
+        pool.setUrl("jdbc:h2:mem:libro_service_" + java.util.UUID.randomUUID() + ";MODE=MySQL");
         pool.setUsername("sa");
         pool.setPassword("");
         pool.setInitialSize(1);
@@ -155,4 +155,20 @@ class LibroServiceTest {
         assertThrows(IllegalArgumentException.class, () -> servicio.eliminar(0));
         assertThrows(IllegalArgumentException.class, () -> servicio.eliminar(-5));
     }
+
+    @Test
+    void combinaBusquedaConAutorYGenero() {
+        var resultados = servicio.buscarPorTexto("Quijote");
+        assertEquals(1, servicio.filtrar(resultados, 1, 1).size());
+        assertEquals(1, servicio.filtrar(resultados, 0, 1).size());
+        assertTrue(servicio.filtrar(resultados, 2, 1).isEmpty());
+        assertTrue(servicio.filtrar(resultados, 1, 2).isEmpty());
+    }
+
+    @Test
+    void rechazaTitulosMasLargosQueLaColumna() {
+        var libro = new dto.LibroDTO(0, "á".repeat(151), 2020, 1, 1);
+        assertThrows(IllegalArgumentException.class, () -> servicio.crear(libro));
+    }
+
 }
